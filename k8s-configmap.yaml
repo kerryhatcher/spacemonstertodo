@@ -1,0 +1,392 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: space-monster-html
+  namespace: space-monster-todo
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Space Monster Todo List</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+      <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+      <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+      <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+      <style>
+        :root {
+          --neon-blue: #00f5ff;
+          --neon-purple: #bf00ff;
+          --neon-green: #39ff14;
+          --neon-pink: #ff00ff;
+          --space-dark: #0a0a0f;
+          --space-medium: #1a1a2e;
+          --space-light: #16213e;
+        }
+        * { box-sizing: border-box; }
+        body {
+          font-family: 'Orbitron', monospace;
+          background: radial-gradient(ellipse at center, var(--space-medium) 0%, var(--space-dark) 100%);
+          min-height: 100vh;
+          overflow-x: hidden;
+          color: #ffffff;
+          margin: 0;
+          padding: 0;
+        }
+        .starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s ease-in-out infinite alternate; }
+        .star:nth-child(odd) { animation-delay: 1.5s; }
+        .star.small { width: 2px; height: 2px; }
+        .star.medium { width: 3px; height: 3px; box-shadow: 0 0 6px var(--neon-blue); }
+        .star.large { width: 4px; height: 4px; box-shadow: 0 0 10px var(--neon-purple); }
+        @keyframes twinkle {
+          0% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.2); }
+          100% { opacity: 0.5; transform: scale(0.8); }
+        }
+        .space-monster {
+          position: fixed; top: 20px; right: 20px; width: 150px; height: 150px;
+          z-index: 1000; cursor: pointer; transition: all 0.3s ease;
+        }
+        .monster-body {
+          width: 100px; height: 120px; background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+          border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; position: relative;
+          animation: float 3s ease-in-out infinite; box-shadow: 0 0 30px var(--neon-purple); margin: 0 auto;
+        }
+        .monster-eyes { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); }
+        .eye {
+          width: 20px; height: 25px; background: white; border-radius: 50%;
+          display: inline-block; margin: 0 5px; position: relative; animation: blink 4s ease-in-out infinite;
+        }
+        .eye::after {
+          content: ''; width: 12px; height: 15px; background: #000; border-radius: 50%;
+          position: absolute; top: 5px; left: 4px; animation: eyeMove 6s ease-in-out infinite;
+        }
+        .monster-mouth {
+          position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+          width: 30px; height: 15px; border: 3px solid var(--neon-green);
+          border-top: none; border-radius: 0 0 50px 50px; animation: smile 2s ease-in-out infinite alternate;
+        }
+        .monster-arms { position: absolute; top: 60px; }
+        .arm {
+          width: 15px; height: 40px; background: linear-gradient(45deg, var(--neon-purple), var(--neon-blue));
+          border-radius: 20px; position: absolute; animation: wave 2s ease-in-out infinite alternate;
+        }
+        .arm.left { left: -20px; transform-origin: top center; }
+        .arm.right { right: -20px; transform-origin: top center; animation-delay: 0.5s; }
+        .monster-happy .monster-body { animation: bounce 0.5s ease-in-out 3; filter: hue-rotate(60deg); }
+        .monster-celebrating .monster-body { animation: spin 1s ease-in-out 2; filter: brightness(1.5) saturate(1.5); }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-20px) scale(1.1); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg) scale(1); }
+          50% { transform: rotate(180deg) scale(1.2); }
+          100% { transform: rotate(360deg) scale(1); }
+        }
+        @keyframes blink {
+          0%, 90%, 100% { height: 25px; }
+          95% { height: 3px; }
+        }
+        @keyframes eyeMove {
+          0%, 20% { transform: translateX(0px); }
+          40% { transform: translateX(3px); }
+          60% { transform: translateX(-3px); }
+          80%, 100% { transform: translateX(0px); }
+        }
+        @keyframes smile { 0% { width: 30px; } 100% { width: 40px; } }
+        @keyframes wave { 0% { transform: rotate(-15deg); } 100% { transform: rotate(15deg); } }
+        .app-container { max-width: 800px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10; }
+        .app-title {
+          text-align: center; font-size: 3.5rem; font-weight: 900; margin-bottom: 40px;
+          background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple), var(--neon-green));
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+          text-shadow: 0 0 30px var(--neon-blue); animation: titleGlow 2s ease-in-out infinite alternate;
+          font-family: 'Orbitron', monospace;
+        }
+        @keyframes titleGlow {
+          0% { filter: drop-shadow(0 0 10px var(--neon-blue)); }
+          100% { filter: drop-shadow(0 0 20px var(--neon-purple)); }
+        }
+        .input-container {
+          background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+          border: 2px solid var(--neon-blue); border-radius: 20px; padding: 20px; margin-bottom: 30px;
+          box-shadow: 0 8px 32px rgba(0, 245, 255, 0.3); animation: inputPulse 3s ease-in-out infinite;
+        }
+        @keyframes inputPulse {
+          0%, 100% { box-shadow: 0 8px 32px rgba(0, 245, 255, 0.3); }
+          50% { box-shadow: 0 8px 32px rgba(191, 0, 255, 0.4); }
+        }
+        .task-input {
+          width: 100%; padding: 15px 20px; font-size: 1.2rem; background: rgba(255, 255, 255, 0.05);
+          border: 2px solid transparent; border-radius: 15px; color: white; backdrop-filter: blur(5px);
+          transition: all 0.3s ease; font-family: 'Space Mono', monospace;
+        }
+        .task-input:focus {
+          outline: none; border-color: var(--neon-green); box-shadow: 0 0 20px var(--neon-green);
+          background: rgba(255, 255, 255, 0.1);
+        }
+        .task-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+        .todo-list { min-height: 200px; }
+        .todo-item {
+          background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);
+          border: 1px solid var(--neon-purple); border-radius: 15px; margin-bottom: 15px;
+          padding: 20px; display: flex; align-items: center; transition: all 0.3s ease;
+          animation: slideInFromSpace 0.8s ease-out; position: relative; overflow: hidden;
+        }
+        .todo-item::before {
+          content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+          transition: left 0.5s;
+        }
+        .todo-item:hover::before { left: 100%; }
+        .todo-item:hover {
+          transform: translateY(-5px) scale(1.02); box-shadow: 0 10px 30px rgba(0, 245, 255, 0.4);
+          border-color: var(--neon-blue);
+        }
+        @keyframes slideInFromSpace {
+          0% { opacity: 0; transform: translateX(-100vw) rotate(720deg) scale(0.1); }
+          70% { transform: translateX(20px) rotate(10deg) scale(1.1); }
+          100% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+        }
+        .todo-checkbox {
+          width: 25px; height: 25px; margin-right: 20px; cursor: pointer; position: relative;
+          background: transparent; border: 3px solid var(--neon-green); border-radius: 8px;
+          transition: all 0.3s ease;
+        }
+        .todo-checkbox:hover {
+          background: rgba(57, 255, 20, 0.2); box-shadow: 0 0 15px var(--neon-green);
+          transform: scale(1.1);
+        }
+        .todo-text { flex: 1; font-size: 1.1rem; color: white; font-family: 'Space Mono', monospace; }
+        .todo-item.completing { animation: taskComplete 2s ease-in-out forwards; }
+        @keyframes taskComplete {
+          0% { opacity: 1; transform: scale(1); filter: brightness(1); }
+          30% { transform: scale(1.1); filter: brightness(1.5) hue-rotate(120deg); box-shadow: 0 0 50px var(--neon-green); }
+          100% { opacity: 0; transform: scale(0.1) rotate(360deg); filter: brightness(2) hue-rotate(240deg); }
+        }
+        .confetti {
+          position: fixed; width: 10px; height: 10px; background: var(--neon-pink);
+          z-index: 9999; pointer-events: none; border-radius: 2px;
+        }
+        .confetti.square { border-radius: 0; }
+        .confetti.circle { border-radius: 50%; }
+        .confetti.triangle {
+          width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent;
+          border-bottom: 10px solid var(--neon-blue); background: transparent;
+        }
+        @keyframes confettiFall {
+          0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .particle { position: absolute; pointer-events: none; border-radius: 50%; }
+        @keyframes particleExplode {
+          0% { opacity: 1; transform: scale(0) translate(0, 0); }
+          100% { opacity: 0; transform: scale(1) translate(var(--random-x), var(--random-y)); }
+        }
+        .empty-state {
+          text-align: center; padding: 60px 20px; color: rgba(255, 255, 255, 0.6);
+          font-size: 1.2rem; font-family: 'Space Mono', monospace;
+        }
+        .empty-state-icon {
+          font-size: 4rem; margin-bottom: 20px; animation: float 2s ease-in-out infinite;
+          filter: drop-shadow(0 0 10px var(--neon-blue));
+        }
+        @media (max-width: 768px) {
+          .app-title { font-size: 2.5rem; }
+          .space-monster { width: 100px; height: 100px; top: 10px; right: 10px; }
+          .monster-body { width: 80px; height: 100px; }
+        }
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: var(--space-dark); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(45deg, var(--neon-purple), var(--neon-green)); }
+      </style>
+    </head>
+    <body>
+      <div class="starfield" id="starfield"></div>
+      <div id="root"></div>
+      <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+        const saveToStorage = (tasks) => {
+          try { localStorage.setItem('spaceTodos', JSON.stringify(tasks)); }
+          catch (error) { console.error('Failed to save tasks:', error); }
+        };
+        const loadFromStorage = () => {
+          try {
+            const stored = localStorage.getItem('spaceTodos');
+            return stored ? JSON.parse(stored) : [];
+          } catch (error) { console.error('Failed to load tasks:', error); return []; }
+        };
+        const Starfield = () => {
+          useEffect(() => {
+            const starfield = document.getElementById('starfield');
+            const starCount = 100;
+            for (let i = 0; i < starCount; i++) {
+              const star = document.createElement('div');
+              star.className = `star ${['small', 'medium', 'large'][Math.floor(Math.random() * 3)]}`;
+              star.style.left = Math.random() * 100 + '%';
+              star.style.top = Math.random() * 100 + '%';
+              star.style.animationDelay = Math.random() * 3 + 's';
+              star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+              starfield.appendChild(star);
+            }
+          }, []);
+          return null;
+        };
+        const SpaceMonster = ({ state, onClick }) => {
+          return (
+            <div className={`space-monster monster-${state}`} onClick={onClick}>
+              <div className="monster-body">
+                <div className="monster-eyes">
+                  <div className="eye"></div>
+                  <div className="eye"></div>
+                </div>
+                <div className="monster-mouth"></div>
+                <div className="monster-arms">
+                  <div className="arm left"></div>
+                  <div className="arm right"></div>
+                </div>
+              </div>
+            </div>
+          );
+        };
+        const createConfetti = () => {
+          const colors = ['#00f5ff', '#bf00ff', '#39ff14', '#ff00ff', '#ffff00'];
+          const shapes = ['square', 'circle', 'triangle'];
+          for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+              const confetti = document.createElement('div');
+              confetti.className = `confetti ${shapes[Math.floor(Math.random() * shapes.length)]}`;
+              confetti.style.left = Math.random() * 100 + 'vw';
+              confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+              confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+              confetti.style.animation = `confettiFall ${confetti.style.animationDuration} linear forwards`;
+              document.body.appendChild(confetti);
+              setTimeout(() => { confetti.remove(); }, 5000);
+            }, i * 100);
+          }
+        };
+        const createParticleExplosion = (x, y) => {
+          for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.position = 'fixed';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.width = '6px';
+            particle.style.height = '6px';
+            particle.style.backgroundColor = ['#00f5ff', '#bf00ff', '#39ff14'][Math.floor(Math.random() * 3)];
+            particle.style.pointerEvents = 'none';
+            particle.style.borderRadius = '50%';
+            particle.style.zIndex = '10000';
+            const randomX = (Math.random() - 0.5) * 300;
+            const randomY = (Math.random() - 0.5) * 300;
+            particle.style.setProperty('--random-x', randomX + 'px');
+            particle.style.setProperty('--random-y', randomY + 'px');
+            particle.style.animation = 'particleExplode 1s ease-out forwards';
+            document.body.appendChild(particle);
+            setTimeout(() => { particle.remove(); }, 1000);
+          }
+        };
+        const TodoItem = ({ todo, onComplete }) => {
+          const [isCompleting, setIsCompleting] = useState(false);
+          const itemRef = useRef();
+          const handleComplete = () => {
+            if (isCompleting) return;
+            setIsCompleting(true);
+            const rect = itemRef.current.getBoundingClientRect();
+            createParticleExplosion(rect.left + 25, rect.top + rect.height / 2);
+            createConfetti();
+            setTimeout(() => { onComplete(todo.id); }, 2000);
+          };
+          return (
+            <div ref={itemRef} className={`todo-item ${isCompleting ? 'completing' : ''}`}>
+              <div className="todo-checkbox" onClick={handleComplete}></div>
+              <div className="todo-text">{todo.text}</div>
+            </div>
+          );
+        };
+        const SpaceTodoApp = () => {
+          const [todos, setTodos] = useState([]);
+          const [inputValue, setInputValue] = useState('');
+          const [monsterState, setMonsterState] = useState('idle');
+          const inputRef = useRef();
+          useEffect(() => { setTodos(loadFromStorage()); }, []);
+          useEffect(() => { saveToStorage(todos); }, [todos]);
+          const addTodo = () => {
+            if (inputValue.trim()) {
+              const newTodo = {
+                id: generateId(),
+                text: inputValue.trim(),
+                completed: false,
+                createdAt: Date.now()
+              };
+              setTodos(prev => [...prev, newTodo]);
+              setInputValue('');
+              setMonsterState('happy');
+              setTimeout(() => setMonsterState('idle'), 1000);
+              inputRef.current?.focus();
+            }
+          };
+          const completeTodo = (id) => {
+            setTodos(prev => prev.filter(todo => todo.id !== id));
+            setMonsterState('celebrating');
+            setTimeout(() => setMonsterState('idle'), 2000);
+          };
+          const handleInputKeyPress = (e) => {
+            if (e.key === 'Enter') { addTodo(); }
+          };
+          const handleMonsterClick = () => {
+            setMonsterState('happy');
+            setTimeout(() => setMonsterState('idle'), 500);
+          };
+          return (
+            <>
+              <Starfield />
+              <SpaceMonster state={monsterState} onClick={handleMonsterClick} />
+              <div className="app-container">
+                <h1 className="app-title">SPACE MONSTER TODO</h1>
+                <div className="input-container">
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="task-input"
+                    placeholder="Enter your cosmic task..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyPress={handleInputKeyPress}
+                    autoFocus
+                  />
+                </div>
+                <div className="todo-list">
+                  {todos.length === 0 ? (
+                    <div className="empty-state">
+                      <div className="empty-state-icon">🚀</div>
+                      <div>No tasks in the void... Add some cosmic goals!</div>
+                    </div>
+                  ) : (
+                    todos.map(todo => (
+                      <TodoItem key={todo.id} todo={todo} onComplete={completeTodo} />
+                    ))
+                  )}
+                </div>
+              </div>
+            </>
+          );
+        };
+        ReactDOM.render(<SpaceTodoApp />, document.getElementById('root'));
+      </script>
+    </body>
+    </html>

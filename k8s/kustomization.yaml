@@ -1,0 +1,52 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: space-monster-todo
+  annotations:
+    description: "Kustomization for Space Monster Todo List application"
+
+# Namespace for all resources
+namespace: space-monster-todo
+
+# Resource files to include
+resources:
+- namespace.yaml
+- configmap.yaml
+- deployment.yaml
+- service.yaml
+- ingress.yaml
+- hpa.yaml
+
+# Common labels applied to all resources
+commonLabels:
+  app: space-monster-todo
+  managed-by: kustomize
+
+# Common annotations applied to all resources
+commonAnnotations:
+  project: space-monster-todo
+  environment: demo
+  deployed-by: kubernetes
+
+# Image transformations
+images:
+- name: space-monster-todo
+  newTag: latest
+
+# ConfigMap generator (alternative to configmap.yaml)
+# configMapGenerator:
+# - name: nginx-config
+#   files:
+#   - nginx.conf
+
+# Replica count modification
+replicas:
+- name: space-monster-todo
+  count: 3
+
+# Resource transformers
+patchesStrategicMerge: []
+
+# JSON 6902 patches
+patches: []

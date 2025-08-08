@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: space-monster-todo-service
+  namespace: space-monster-todo
+  labels:
+    app: space-monster-todo
+    component: frontend
+    service: web
+  annotations:
+    description: "Service for Space Monster Todo List frontend"
+    service.beta.kubernetes.io/external-traffic-policy: Local
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: space-monster-todo
+    component: frontend
+  sessionAffinity: None
