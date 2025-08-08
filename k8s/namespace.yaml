@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: space-monster-todo
+  labels:
+    app: space-monster-todo
+    environment: demo
+    tier: frontend
+  annotations:
+    description: "Namespace for Space Monster Todo List demo application"
+    owner: "demo-team"
+    created-by: "kubernetes-deployment"
