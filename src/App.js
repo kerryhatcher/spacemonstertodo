@@ -83,9 +83,28 @@ const App = () => {
     };
   }, [handleMouseMove]);
 
-  // Load todos from localStorage on mount
+  // Load todos from localStorage on mount (migrate old keys)
   useEffect(() => {
-    const savedTodos = localStorage.getItem('cosmic-quest-todos');
+    const LEGACY_KEYS = ['spaceTodos'];
+    const CANONICAL_KEY = 'cosmic-quest-todos';
+
+    // Migrate from legacy keys if canonical missing
+    const existing = localStorage.getItem(CANONICAL_KEY);
+    if (!existing) {
+      for (const key of LEGACY_KEYS) {
+        const legacy = localStorage.getItem(key);
+        if (legacy) {
+          try {
+            localStorage.setItem(CANONICAL_KEY, legacy);
+            break;
+          } catch (e) {
+            console.warn('Failed to migrate legacy storage key', key, e);
+          }
+        }
+      }
+    }
+
+    const savedTodos = localStorage.getItem(CANONICAL_KEY);
     if (savedTodos) {
       try {
         setTodos(JSON.parse(savedTodos));
@@ -97,7 +116,8 @@ const App = () => {
 
   // Save todos to localStorage whenever todos change
   useEffect(() => {
-    localStorage.setItem('cosmic-quest-todos', JSON.stringify(todos));
+    const CANONICAL_KEY = 'cosmic-quest-todos';
+    localStorage.setItem(CANONICAL_KEY, JSON.stringify(todos));
   }, [todos]);
 
   // Portal entrance animation
@@ -128,10 +148,11 @@ const App = () => {
     setCelebration(true);
     setMonsterMood('celebrating');
     
-    // Screen flash effect
-    document.body.style.background = 'radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(255,0,255,0.3) 100%)';
+    // Screen flash effect via CSS class
+    const flashClass = 'screen-flash';
+    document.body.classList.add(flashClass);
     setTimeout(() => {
-      document.body.style.background = '';
+      document.body.classList.remove(flashClass);
     }, 200);
     
     // Hide completed task after animation

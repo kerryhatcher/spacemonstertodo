@@ -1227,6 +1227,11 @@ body {
   animation: matrix-rain 10s linear infinite !important;
 }
 
+/* Quick body flash for celebration */
+body.screen-flash {
+  background: radial-gradient(circle, rgba(0,255,255,0.3) 0%, rgba(255,0,255,0.3) 100%) !important;
+}
+
 @keyframes matrix-rain {
   0% { background-position: 0% 0%; }
   100% { background-position: 0% 1000%; }

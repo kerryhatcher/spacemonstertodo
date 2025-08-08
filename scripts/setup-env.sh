@@ -43,7 +43,9 @@ fi
 
 # Load environment variables
 print_status "Loading environment variables from .env file..."
-export $(grep -v '^#' .env | xargs)
+set -a
+source .env
+set +a
 
 # Validate required variables
 REQUIRED_VARS=("DOMAIN")
